@@ -1,0 +1,305 @@
+#:import dp kivy.metrics.dp
+
+<TransactionRow>:
+    orientation: 'horizontal'
+    size_hint_y: None
+    height: dp(60)
+    padding: dp(10), dp(4)
+    canvas.before:
+        Color:
+            rgba: 1, 1, 1, 1
+        Rectangle:
+            pos: self.pos
+            size: self.size
+        Color:
+            rgba: 0.88, 0.88, 0.9, 1
+        Rectangle:
+            pos: self.x, self.y
+            size: self.width, 1
+    BoxLayout:
+        orientation: 'vertical'
+        Label:
+            text: root.category_text
+            bold: True
+            color: 0.1, 0.1, 0.15, 1
+            halign: 'left'
+            valign: 'middle'
+            text_size: self.size
+        Label:
+            text: root.desc_text
+            color: 0.4, 0.4, 0.45, 1
+            font_size: '13sp'
+            halign: 'left'
+            valign: 'middle'
+            text_size: self.size
+    Label:
+        text: root.amount_text
+        color: root.amount_color
+        bold: True
+        size_hint_x: None
+        width: dp(130)
+        halign: 'right'
+        valign: 'middle'
+        text_size: self.size
+    Button:
+        text: 'x'
+        size_hint_x: None
+        width: dp(40)
+        background_normal: ''
+        background_color: 0.9, 0.9, 0.92, 1
+        color: 0.5, 0.1, 0.1, 1
+        on_release: app.delete_transaction(root.tx_id)
+
+<AddTransactionPopup>:
+    title: 'Новая операция'
+    size_hint: 0.92, 0.9
+    auto_dismiss: False
+    BoxLayout:
+        orientation: 'vertical'
+        padding: dp(12)
+        spacing: dp(10)
+        BoxLayout:
+            size_hint_y: None
+            height: dp(46)
+            spacing: dp(8)
+            ToggleButton:
+                text: 'Расход'
+                group: 'kind'
+                state: 'down'
+                allow_no_selection: False
+                on_release: root.set_kind('expense')
+            ToggleButton:
+                text: 'Доход'
+                group: 'kind'
+                allow_no_selection: False
+                on_release: root.set_kind('income')
+        Label:
+            text: 'Категория:'
+            size_hint_y: None
+            height: dp(24)
+            halign: 'left'
+            text_size: self.size
+        Spinner:
+            id: category_spinner
+            text: 'Выберите категорию'
+            size_hint_y: None
+            height: dp(46)
+        Label:
+            text: 'Описание:'
+            size_hint_y: None
+            height: dp(24)
+            halign: 'left'
+            text_size: self.size
+        TextInput:
+            id: description_input
+            multiline: False
+            size_hint_y: None
+            height: dp(46)
+        Label:
+            text: 'Сумма (руб.):'
+            size_hint_y: None
+            height: dp(24)
+            halign: 'left'
+            text_size: self.size
+        TextInput:
+            id: amount_input
+            multiline: False
+            input_filter: 'float'
+            size_hint_y: None
+            height: dp(46)
+        Label:
+            id: error_label
+            color: 0.8, 0.1, 0.1, 1
+            size_hint_y: None
+            height: dp(24)
+        BoxLayout:
+            size_hint_y: None
+            height: dp(50)
+            spacing: dp(10)
+            Button:
+                text: 'Отмена'
+                on_release: root.dismiss()
+            Button:
+                text: 'Сохранить'
+                background_color: 0.2, 0.6, 0.3, 1
+                on_release: root.save()
+
+<MainScreen>:
+    BoxLayout:
+        orientation: 'vertical'
+        padding: dp(12)
+        spacing: dp(8)
+        Label:
+            text: 'БИЗНЕС-ТРЕКЕР'
+            font_size: '22sp'
+            bold: True
+            color: 0.13, 0.28, 0.45, 1
+            size_hint_y: None
+            height: dp(40)
+        BoxLayout:
+            orientation: 'vertical'
+            size_hint_y: None
+            height: dp(96)
+            canvas.before:
+                Color:
+                    rgba: 1, 1, 1, 1
+                RoundedRectangle:
+                    pos: self.pos
+                    size: self.size
+                    radius: [dp(12)]
+            Label:
+                text: 'Баланс'
+                color: 0.4, 0.4, 0.45, 1
+                size_hint_y: 0.3
+            Label:
+                text: root.balance_text
+                font_size: '26sp'
+                bold: True
+                color: root.balance_color
+            BoxLayout:
+                size_hint_y: 0.35
+                Label:
+                    text: 'Доходы: ' + root.income_text
+                    color: 0.1, 0.55, 0.2, 1
+                    font_size: '13sp'
+                Label:
+                    text: 'Расходы: ' + root.expense_text
+                    color: 0.8, 0.15, 0.15, 1
+                    font_size: '13sp'
+        BoxLayout:
+            size_hint_y: None
+            height: dp(48)
+            spacing: dp(6)
+            Button:
+                text: 'Добавить'
+                background_color: 0.2, 0.6, 0.3, 1
+                on_release: app.open_add_popup()
+            Button:
+                text: 'Аналитика'
+                background_color: 0.2, 0.4, 0.8, 1
+                on_release: app.go('charts')
+            Button:
+                text: 'Синхр.'
+                background_color: 0.4, 0.3, 0.7, 1
+                on_release: app.sync()
+        BoxLayout:
+            size_hint_y: None
+            height: dp(40)
+            spacing: dp(6)
+            Button:
+                text: 'Экспорт CSV'
+                on_release: app.export_csv()
+            Button:
+                text: 'Настройки'
+                on_release: app.go('settings')
+        RecycleView:
+            id: rv
+            viewclass: 'TransactionRow'
+            RecycleBoxLayout:
+                default_size: None, dp(60)
+                default_size_hint: 1, None
+                size_hint_y: None
+                height: self.minimum_height
+                orientation: 'vertical'
+        Label:
+            text: root.status_text
+            color: 0.35, 0.35, 0.4, 1
+            font_size: '12sp'
+            size_hint_y: None
+            height: dp(24)
+
+<ChartsScreen>:
+    BoxLayout:
+        orientation: 'vertical'
+        padding: dp(12)
+        spacing: dp(8)
+        Label:
+            text: 'АНАЛИТИКА'
+            font_size: '20sp'
+            bold: True
+            color: 0.13, 0.28, 0.45, 1
+            size_hint_y: None
+            height: dp(36)
+        BoxLayout:
+            size_hint_y: None
+            height: dp(44)
+            spacing: dp(6)
+            ToggleButton:
+                text: 'Расходы'
+                group: 'chart'
+                state: 'down'
+                allow_no_selection: False
+                on_release: root.show('expense')
+            ToggleButton:
+                text: 'Доходы'
+                group: 'chart'
+                allow_no_selection: False
+                on_release: root.show('income')
+            ToggleButton:
+                text: 'Итог'
+                group: 'chart'
+                allow_no_selection: False
+                on_release: root.show('total')
+        BoxLayout:
+            id: chart_box
+        Button:
+            text: 'Назад'
+            size_hint_y: None
+            height: dp(48)
+            on_release: app.go('main')
+
+<SettingsScreen>:
+    BoxLayout:
+        orientation: 'vertical'
+        padding: dp(16)
+        spacing: dp(10)
+        Label:
+            text: 'НАСТРОЙКИ ОБЛАКА'
+            font_size: '20sp'
+            bold: True
+            color: 0.13, 0.28, 0.45, 1
+            size_hint_y: None
+            height: dp(36)
+        Label:
+            text: 'Адрес Firebase Realtime Database:'
+            color: 0.2, 0.2, 0.25, 1
+            size_hint_y: None
+            height: dp(24)
+            halign: 'left'
+            text_size: self.size
+        TextInput:
+            id: url_input
+            hint_text: 'https://проект-default-rtdb.firebaseio.com'
+            multiline: False
+            size_hint_y: None
+            height: dp(46)
+        Label:
+            text: 'Токен доступа (если нужен):'
+            color: 0.2, 0.2, 0.25, 1
+            size_hint_y: None
+            height: dp(24)
+            halign: 'left'
+            text_size: self.size
+        TextInput:
+            id: token_input
+            multiline: False
+            password: True
+            size_hint_y: None
+            height: dp(46)
+        Button:
+            text: 'Сохранить'
+            background_color: 0.2, 0.6, 0.3, 1
+            size_hint_y: None
+            height: dp(48)
+            on_release: app.save_settings(url_input.text, token_input.text)
+        Button:
+            text: 'Добавить демо-данные'
+            size_hint_y: None
+            height: dp(48)
+            on_release: app.add_demo_data()
+        Button:
+            text: 'Назад'
+            size_hint_y: None
+            height: dp(48)
+            on_release: app.go('main')
+        Widget:
